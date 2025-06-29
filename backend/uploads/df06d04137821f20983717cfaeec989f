@@ -1,0 +1,4 @@
+ID,Name,Email
+1,=cmd|' /C calc'!A0,hacker@example.com
+2,=HYPERLINK("http://malicious.com","Click me"),phisher@example.com
+3,"=1+1",safe@example.com
