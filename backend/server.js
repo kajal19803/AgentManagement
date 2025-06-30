@@ -43,11 +43,11 @@ app.use(cookieParser());
 app.use(cors({
   origin: ['https://cstech-c8hr.onrender.com'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
 
-app.options('*', cors()); // To handle preflight requests globally
+
 // Rate limiting
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
