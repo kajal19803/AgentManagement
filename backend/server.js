@@ -36,14 +36,18 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '10kb' })); // Limit request size
+
 app.set('trust proxy', 1); 
 
 app.use(cookieParser());
 app.use(cors({
-  origin: 'https://cstech-c8hr.onrender.com',
+  origin: ['https://cstech-c8hr.onrender.com'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
 
+app.options('*', cors()); // To handle preflight requests globally
 // Rate limiting
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
