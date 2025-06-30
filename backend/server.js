@@ -36,9 +36,9 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '10kb' })); // Limit request size
+app.set('trust proxy', 1); 
+
 app.use(cookieParser());
-
-
 app.use(cors({
   origin: 'https://cstech-c8hr.onrender.com',
   credentials: true,
