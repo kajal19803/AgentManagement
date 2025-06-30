@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const winston = require('winston');
 const fs = require('fs');
 const path = require('path');
+const DailyRotateFile = require('winston-daily-rotate-file'); // For rotating error logs
 require('dotenv').config();
 
 const app = express();
@@ -58,13 +59,26 @@ app.use('/api', rateLimit({
 }));
 
 // Logging setup
+
+// Access logs written to logs/access.log
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'logs', 'access.log'), { flags: 'a' });
 app.use(morgan('combined', { stream: accessLogStream }));
 
+// Error logs with daily rotation
+const errorRotateTransport = new DailyRotateFile({
+  filename: 'logs/error-%DATE%.log', // File name pattern
+  datePattern: 'YYYY-MM-DD',         // Rotate daily
+  maxSize: '5m',                     // Max size of each file
+  maxFiles: '7d',                    // Keep logs for 7 days
+  zippedArchive: true,              // Compress old logs
+  level: 'error'
+});
+
+// Winston logger instance
 const logger = winston.createLogger({
   level: 'error',
   transports: [
-    new winston.transports.File({ filename: 'logs/error.log' }),
+    errorRotateTransport,
     new winston.transports.Console({ format: winston.format.simple() })
   ],
   format: winston.format.combine(
@@ -101,6 +115,7 @@ app.use((err, req, res, next) => {
 // Server start
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+
 
 
 

@@ -11,6 +11,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 
 const router = express.Router();
+const sendSecurityAlert = require('../utils/sendSecurityAlert'); // Utility for email alert
 
 // Utility: Allow only admin users
 const ensureAdminUser = (user) => {
@@ -30,7 +31,6 @@ router.get('/csrf-token', (req, res) => {
   });
   res.json({ csrfToken: token });
 });
-
 // Route: Admin login with CSRF + Rate Limiting + GeoIP logging
 router.post('/login', loginLimiter, csrfValidator, [
   body('email').isEmail().withMessage('Valid email is required'),
@@ -47,7 +47,7 @@ router.post('/login', loginLimiter, csrfValidator, [
     if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
 
     // Get IP and user agent info
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || '127.0.0.1';
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     // Try fetching geo location
@@ -59,11 +59,19 @@ router.post('/login', loginLimiter, csrfValidator, [
       }
     } catch {}
 
+    // Check if IP is new (not in previous login history)
+    const isNewIp = !user.loginHistory.some(entry => entry.ip === ip);
+
     // Save login record (max last 50)
     await User.updateOne(
       { _id: user._id },
       { $push: { loginHistory: { $each: [{ timestamp: new Date(), ip, userAgent, location }], $slice: -50 } } }
     );
+
+    // If new IP, send security alert email
+    if (isNewIp) {
+      await sendSecurityAlert(user.email, ip, location, userAgent);
+    }
 
     // Create JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2h' });

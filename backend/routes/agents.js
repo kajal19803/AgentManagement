@@ -12,8 +12,51 @@ router.post('/create', auth, isAdmin, [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Invalid email').normalizeEmail(),
   body('countryCode').trim().matches(/^\+\d{1,4}$/).withMessage('Invalid country code format'),
-  body('mobile').trim().matches(/^\d{7,15}$/).withMessage('Mobile must be 7 to 15 digits'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+  body('mobile').trim().custom((value, { req }) => {
+      const code = req.body.countryCode;
+      const number = value;
+      if (!/^\d{7,15}$/.test(number)) {throw new Error('Mobile must be 7 to 15 digits');}
+      // Country-specific mobile format validation
+      switch (code) {
+        case '+91': // India
+          if (!/^[6-9]\d{9}$/.test(number)) {
+            throw new Error('Indian mobile number must be 10 digits and start with 6-9');
+          }
+          break;
+        case '+1': // USA/Canada
+          if (!/^\d{10}$/.test(number)) {
+            throw new Error('US/Canada number must be exactly 10 digits');
+          }
+          break;
+        case '+44': // UK
+          if (!/^\d{10,11}$/.test(number)) {
+            throw new Error('UK number must be 10 or 11 digits');
+          }
+          break;
+        case '+61': // Australia
+          if (!/^\d{9}$/.test(number)) {
+            throw new Error('Australian number must be 9 digits');
+          }
+          break;
+        default:
+          if (!/^\d{7,15}$/.test(number)) {
+            throw new Error('Mobile must be between 7 to 15 digits');
+          }
+      }
+      return true;
+    }),
+  body('password')
+  .isLength({ min: 6 })
+  .withMessage('Password must be at least 6 characters long')
+  .matches(/[a-z]/)
+  .withMessage('Password must contain at least one lowercase letter')
+  .matches(/[A-Z]/)
+  .withMessage('Password must contain at least one uppercase letter')
+  .matches(/[0-9]/)
+  .withMessage('Password must contain at least one digit')
+  .matches(/[!@#$%^&*(),.?":{}|<>]/)
+  .withMessage('Password must contain at least one special character (e.g., !@#$%)')
+
 ], runValidation, async (req, res) => {
   const { name, email, countryCode, mobile, password } = req.body;
 
@@ -26,6 +69,10 @@ router.post('/create', auth, isAdmin, [
     res.json(agent);
   } catch (error) {
     console.error('Error creating agent:', error);
+    // Duplicate email error handling
+    if (error.code === 11000 && error.keyPattern?.email) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
     res.status(500).json({ message: 'Server error. Could not create agent.' });
   }
 });

@@ -30,9 +30,13 @@ function Dashboard() {
   const [total, setTotal] = useState(0);
   const [activeTimestamp, setActiveTimestamp] = useState(null);
 
+  const [errors, setErrors] = useState({});
+
+
   // Modal/Alert states
   const [alert, setAlert] = useState({ show: false, message: '' });
   const [confirmModal, setConfirmModal] = useState({ show: false, agent: null });
+  const [addConfirm, setAddConfirm] = useState(false);
 
   const limit = 5;
   const showAlert = (message) => setAlert({ show: true, message });
@@ -53,18 +57,54 @@ function Dashboard() {
   useEffect(() => {
     fetchAgents();
   }, [fetchAgents]);
+  // Final agent submission after confirmation
+  const confirmAddAgent = async () => {
+  try {
+    const [countryCode, mobileNumber] = mobile.split('-');
 
-  // Add new agent
-  const handleAddAgent = async () => {
-    try {
-      const [countryCode, mobileNumber] = mobile.split('-');
-      await axios.post('/api/agents/create', { name, email, countryCode, mobile: mobileNumber, password });
-      fetchAgents();
-      setName(''); setEmail(''); setMobile(''); setPassword('');
-      showAlert('Agent added successfully!');
-    } catch (err) {
-      showAlert(err.response?.data?.message || 'Failed to add agent');
+    // Make API call to create agent
+    await axios.post('/api/agents/create', {
+      name,
+      email,
+      countryCode,
+      mobile: mobileNumber,
+      password,
+    });
+
+    fetchAgents(); // Refresh list
+    setName('');
+    setEmail('');
+    setMobile('');
+    setPassword('');
+    setErrors({}); // Clear field errors
+    showAlert('Agent added successfully!');
+  } catch (err) {
+    const data = err.response?.data;
+
+    // If backend sent field-specific validation errors
+    if (Array.isArray(data?.errors)) {
+      const fieldErrors = {};
+      data.errors.forEach((e) => {
+        fieldErrors[e.path] = e.msg; // Express-validator format
+      });
+      setErrors(fieldErrors);
+    } else {
+      // General fallback message
+      showAlert(data?.message || 'Failed to add agent');
     }
+  } finally {
+    setAddConfirm(false);
+  }
+};
+
+
+  // Show confirm modal instead of direct add
+  const handleAddAgent = () => {
+    if (!name || !email || !mobile || !password) {
+      showAlert('All fields are required');
+      return;
+    }
+    setAddConfirm(true); // Show confirmation modal first
   };
 
   // Delete agent (with confirmation)
@@ -128,7 +168,9 @@ function Dashboard() {
     <div className="fixed inset-0 bg-gradient-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-black dark:to-gray-800 text-black dark:text-white overflow-y-auto transition-colors duration-300">
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
         <Header onLogout={handleLogout} />
-        <AddAgentForm {...{ name, email, mobile, password, setName, setEmail, setMobile, setPassword, handleAddAgent }} />
+        <AddAgentForm {...{name, email, mobile, password,setName, setEmail, setMobile, setPassword,
+                   handleAddAgent, errors, setErrors}}
+        />
         <UploadFile {...{ file, setFile, handleUpload }} />
 
         {/* Search + pagination + deleted toggle */}
@@ -169,6 +211,14 @@ function Dashboard() {
           message={`Are you sure you want to delete "${confirmModal.agent.name}"?`}
           onConfirm={handleDeleteAgent}
           onCancel={() => setConfirmModal({ show: false, agent: null })}
+        />
+      )}
+      {/* Add Confirm Modal */}
+      {addConfirm && (
+        <ConfirmModal
+          message="Once added, agent details cannot be edited. If there's a mistake, you'll need to delete and re-add the agent. Do you want to continue?"
+          onConfirm={confirmAddAgent}
+          onCancel={() => setAddConfirm(false)}
         />
       )}
     </div>
