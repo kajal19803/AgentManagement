@@ -14,9 +14,12 @@ const upload = multer({
   dest: 'uploads/',
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const ext = require('path').extname(file.originalname).toLowerCase();
-    cb(null, ['.csv', '.xlsx', '.xls'].includes(ext));
-  },
+  const ext = require('path').extname(file.originalname).toLowerCase();
+  if (!['.csv', '.xlsx', '.xls'].includes(ext)) {
+    return cb(new Error('Only CSV, XLSX, and XLS files are allowed.'));
+  }
+  cb(null, true);
+},
 });
 
 // Upload file and distribute data

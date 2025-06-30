@@ -99,14 +99,14 @@ app.use('/api/upload', require('./routes/upload'));
 
 // Global error handler
 app.use((err, req, res, next) => {
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({ message: 'File too large. Max allowed size is 5MB.' });
-  }
   if (err.message.includes('Only CSV')) {
     return res.status(400).json({ message: err.message });
   }
-  logger.error('Unexpected error', { message: err.message, stack: err.stack });
-  res.status(500).json({ message: 'Something went wrong.' });
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ message: 'File size exceeds 5MB limit' });
+  }
+  console.error('Unhandled Error:', err);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 
 // Server start

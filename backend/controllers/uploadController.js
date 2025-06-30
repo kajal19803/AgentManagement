@@ -26,6 +26,16 @@ exports.uploadAndDistribute = async (req, res) => {
     }
     // const safe = await scanFileForVirus(req.file.path); // ClamAV commented
     // if (!safe) { fs.unlinkSync(req.file.path); return res.status(400).json({ message: 'File contains a virus and was rejected' }); }
+    const allowedMimeTypes = [
+      'text/csv',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+       'application/vnd.ms-excel'
+    ];
+
+if (!allowedMimeTypes.includes(req.file.mimetype)) {
+  fs.unlinkSync(req.file.path);
+  return res.status(400).json({ message: 'Invalid file type based on MIME type.' });
+}
 
     const selectedAgentIds = JSON.parse(req.body.agents);
     const agents = await User.find({ _id: { $in: selectedAgentIds }, role: 'agent' });
