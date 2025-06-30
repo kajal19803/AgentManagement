@@ -25,7 +25,7 @@ router.get('/csrf-token', (req, res) => {
   const token = crypto.randomBytes(24).toString('hex');
   res.cookie('csrfToken', token, {
     httpOnly: false,
-    sameSite: 'Lax',
+    sameSite: 'None',
     secure: process.env.NODE_ENV === 'production',
     maxAge: 2 * 60 * 60 * 1000,
   });
@@ -77,12 +77,13 @@ router.post('/login', loginLimiter, csrfValidator, [
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
     // Set JWT in cookie
-    res.cookie('csrfToken', token, {
-        httpOnly: false,
-        sameSite: 'None',
-        secure: true,
-        maxAge: 2 * 60 * 60 * 1000,
-      });
+    res.cookie('token', token, {
+       httpOnly: true,
+      sameSite: 'None',
+      secure: true,
+      maxAge: 2 * 60 * 60 * 1000,
+    });
+
 
     res.json({ user: { name: user.name, email: user.email, role: user.role } });
   } catch (err) {
