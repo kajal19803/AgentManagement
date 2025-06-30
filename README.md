@@ -49,27 +49,6 @@ Upload logic parses rows and distributes evenly among agents
 Clean folder structure with reusable components (AlertModal, etc.)
 .env setup for MongoDB URI, JWT secret, etc.
 
-Project Structure
-
-├── backend/
-│   ├── models/
-│   ├── routes/
-│   ├── controllers/
-│   └── server.js
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── context/ThemeContext.js
-│   │   ├── App.js
-│   │   └── index.js
-│   └── public/
-│       ├── cstech.jpg  # logo used as favicon
-│       └── index.html  # branding updated
-├── .env
-├── README.md
-└── package.json
-
 Deliverables
 Full source code (Frontend + Backend)
 .env.example file with necessary keys
@@ -101,14 +80,5 @@ PORT=5000
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
 
-Evaluation Checklist
-Criteria	            Implemented
-Functionality	           Yes
-Code Quality	           Yes
-Validation & Error	       Yes
-User Interface	           Yes
-Setup Instructions	       Yes
 
-🎥 Video Demo
-📽️ Click to watch
 
