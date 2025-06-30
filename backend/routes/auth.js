@@ -77,12 +77,12 @@ router.post('/login', loginLimiter, csrfValidator, [
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
     // Set JWT in cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 2 * 60 * 60 * 1000,
-    });
+    res.cookie('csrfToken', token, {
+        httpOnly: false,
+        sameSite: 'None',
+        secure: true,
+        maxAge: 2 * 60 * 60 * 1000,
+      });
 
     res.json({ user: { name: user.name, email: user.email, role: user.role } });
   } catch (err) {

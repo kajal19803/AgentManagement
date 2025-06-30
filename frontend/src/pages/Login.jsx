@@ -14,7 +14,7 @@ function Login({ onLogin }) {
 
   // Fetch CSRF token on component mount
   useEffect(() => {
-    axios.get('/api/auth/csrf-token')
+    axios.get('/api/auth/csrf-token', { withCredentials: true })
       .then(({ data }) => setCsrfToken(data.csrfToken))
       .catch(err => console.error('Failed to fetch CSRF token:', err.message));
   }, []);
