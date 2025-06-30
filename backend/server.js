@@ -13,7 +13,6 @@ const DailyRotateFile = require('winston-daily-rotate-file'); // For rotating er
 require('dotenv').config();
 
 const app = express();
-app.set('trust proxy', true);
 app.disable('x-powered-by'); // Hide Express fingerprint
 
 // Secure headers
@@ -40,13 +39,8 @@ app.use(express.json({ limit: '10kb' })); // Limit request size
 app.use(cookieParser());
 
 
-const allowedOrigins = ['https://cstech-c8hr.onrender.com'];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS not allowed from this origin'));
-  },
+  origin: 'https://cstech-c8hr.onrender.com',
   credentials: true,
 }));
 
