@@ -1,6 +1,9 @@
+// axiosConfig.jsx
 import axios from 'axios';
 
-axios.defaults.baseURL = 'https://agentmanagement-zf7q.onrender.com';
-axios.defaults.withCredentials = true;
+const instance = axios.create({
+  baseURL: 'https://agentmanagement-zf7q.onrender.com',
+  withCredentials: true,
+});
 
-export default axios;
+export default instance;

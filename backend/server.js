@@ -13,13 +13,14 @@ const DailyRotateFile = require('winston-daily-rotate-file'); // For rotating er
 require('dotenv').config();
 
 const app = express();
+app.set('trust proxy', true);
 app.disable('x-powered-by'); // Hide Express fingerprint
 
 // Secure headers
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
   directives: {
-    defaultSrc: ["'self'"],
+    defaultSrc:["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'"],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
