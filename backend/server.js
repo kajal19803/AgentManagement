@@ -39,10 +39,8 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '10kb' })); // Limit request size
 app.use(cookieParser());
 
-// Dynamically read allowed origins from .env
-const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-  : [];
+
+const allowedOrigins = ['https://cstech-c8hr.onrender.com'];
 
 app.use(cors({
   origin: (origin, callback) => {
