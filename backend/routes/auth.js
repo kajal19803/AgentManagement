@@ -19,14 +19,33 @@ const ensureAdminUser = (user) => {
     throw new Error('Access denied: only admins can log in');
   }
 };
+router.post('/register-admin', async (req, res) => {
+  try {
+    const { name, email, countryCode, mobile, password } = req.body;
+    const hashed = await bcrypt.hash(password, 10);
+    const admin = await User.create({
+      name,
+      email,
+      countryCode,
+      mobile,
+      password: hashed,
+      role: 'admin',
+      createdBy: null
+    });
+    res.json({ message: 'Admin created', id: admin._id });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: err.message });
+  }
+});
 
 // Route: Generate CSRF token and set in cookie
 router.get('/csrf-token', (req, res) => {
   const token = crypto.randomBytes(24).toString('hex');
   res.cookie('csrfToken', token, {
-    httpOnly: false,
+    httpOnly: true,
     sameSite: 'None',
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'development',
     maxAge: 2 * 60 * 60 * 1000,
   });
   res.json({ csrfToken: token });

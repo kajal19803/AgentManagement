@@ -41,7 +41,7 @@ app.set('trust proxy', 1);
 
 app.use(cookieParser());
 app.use(cors({
-  origin: ['https://cstech-c8hr.onrender.com'],
+  origin: ['http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
@@ -96,6 +96,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/agents', require('./routes/agents'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/tasks', require('./routes/tasks'));
 
 // Global error handler
 app.use((err, req, res, next) => {

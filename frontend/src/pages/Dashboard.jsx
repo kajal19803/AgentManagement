@@ -47,7 +47,19 @@ function Dashboard() {
       const res = await axios.get('/api/agents', {
         params: { page, limit, search, includeDeleted: showDeleted },
       });
-      setAgents(res.data.agents);
+      // Map each agent with their totalTasks by calling another endpoint or from the backend response directly
+      const agentsWithTaskCount = await Promise.all(
+       res.data.agents.map(async (agent) => {
+        try {
+          const taskRes = await axios.get(`/api/agents/${agent._id}/tasks`);
+          return { ...agent, totalTasks: taskRes.data.tasks.length };
+        } catch {
+        return { ...agent, totalTasks: 0 };
+          }
+       })
+      );
+      setAgents(agentsWithTaskCount);
+
       setTotal(res.data.total);
     } catch {
       showAlert('Failed to fetch agents.');
