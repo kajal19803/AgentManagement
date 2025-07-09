@@ -32,6 +32,9 @@ const userSchema = new mongoose.Schema({
   // Soft delete flag
   deleted: { type: Boolean, default: false },
 
+  // The admin who created this agent (only applicable to agents)
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
   // Array to store login history with metadata
   loginHistory: [{
     timestamp: { type: Date, default: Date.now },
@@ -46,4 +49,5 @@ const userSchema = new mongoose.Schema({
 
 // Export the model for use in controllers or services
 module.exports = mongoose.model('User', userSchema);
+
 

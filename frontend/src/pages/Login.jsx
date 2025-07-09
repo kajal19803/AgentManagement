@@ -12,6 +12,14 @@ function Login({ onLogin }) {
   const [alert, setAlert] = useState({ show: false, message: '' });
   const [csrfToken, setCsrfToken] = useState('');
 
+  // Register admin states
+  const [isRegister, setIsRegister] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regCountryCode, setRegCountryCode] = useState('+91');
+  const [regMobile, setRegMobile] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+
   // Fetch CSRF token on component mount
   useEffect(() => {
     axios.get('/api/auth/csrf-token', { withCredentials: true })
@@ -29,9 +37,34 @@ function Login({ onLogin }) {
         { headers: { 'X-CSRF-Token': csrfToken } }
       );
       if (onLogin) onLogin(res.data.user);
+      localStorage.setItem("userRole", res.data.user.role);
+
+      if (res.data.user.role === 'admin') {
       window.location.href = '/dashboard';
+      } else if (res.data.user.role === 'agent') {
+      window.location.href = '/agent-dashboard';
+      } else {
+      setAlert({ show: true, message: 'Unauthorized role' });
+     }
+
     } catch (err) {
       setAlert({ show: true, message: err.response?.data?.message || 'Login failed' });
+    }
+  };
+
+  // Handle register admin submit
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        '/api/auth/register-admin',
+        { name: regName, email: regEmail, countryCode: regCountryCode, mobile: regMobile, password: regPassword },
+        { headers: { 'X-CSRF-Token': csrfToken } }
+      );
+      setAlert({ show: true, message: 'New admin registered successfully' });
+      setIsRegister(false);
+    } catch (err) {
+      setAlert({ show: true, message: err.response?.data?.message || 'Registration failed' });
     }
   };
 
@@ -39,7 +72,7 @@ function Login({ onLogin }) {
     <div className={`min-h-screen fixed inset-0 w-full h-full transition-colors duration-300 flex items-center justify-center px-4 overflow-hidden
       ${theme === 'dark'
         ? 'bg-gradient-to-tr from-gray-900 via-black to-gray-800 text-white'
-        : 'bg-gradient-to-tr from-gray-100 via-white to-gray-200 text-black'}`}>
+        : 'bg-gradient-to-tr from-gray-100 via-white to-gray-200 text-black'}`}>  
 
       {/* Theme toggle button */}
       <button
@@ -53,58 +86,116 @@ function Login({ onLogin }) {
       <div className="absolute w-[500px] h-[500px] bg-teal-500 rounded-full blur-3xl opacity-20 top-0 left-0 animate-pulse"></div>
       <div className="absolute w-[400px] h-[400px] bg-purple-600 rounded-full blur-3xl opacity-20 bottom-0 right-0 animate-ping"></div>
 
-      {/* Login form */}
-      <form
-        onSubmit={handleSubmit}
-        className={`z-10 w-full max-w-sm backdrop-blur-lg p-8 rounded-xl space-y-6 border
-          ${theme === 'dark' ? 'bg-black/40 border-gray-700' : 'bg-white/40 border-gray-300'}`}
-      >
-        <h2 className={`text-3xl font-bold text-center tracking-wide 
-          ${theme === 'dark' ? 'text-teal-200' : 'text-teal-700'}`}>
-          CSTech Admin Login
-        </h2>
+      {/* Login or Register form */}
+      {!isRegister ? (
+        <form onSubmit={handleSubmit} className={`z-10 w-full max-w-sm backdrop-blur-lg p-8 rounded-xl space-y-6 border
+          ${theme === 'dark' ? 'bg-black/40 border-gray-700' : 'bg-white/40 border-gray-300'}`}>
+          <h2 className={`text-3xl font-bold text-center tracking-wide
+            ${theme === 'dark' ? 'text-teal-200' : 'text-teal-700'}`}>
+            CSTech Login
+          </h2>
 
-        {/* Email input */}
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className={`w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-teal-400
-            ${theme === 'dark'
-              ? 'bg-gray-800 text-white border-gray-600 placeholder-gray-400'
-              : 'bg-gray-100 text-gray-800 border-gray-400 placeholder-gray-600'}`}
-        />
-
-        {/* Password input with show/hide toggle */}
-        <div className="relative">
           <input
-            type={show ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-teal-400 bg-gray-100 dark:bg-gray-800"
+          />
+
+          <div className="relative">
+            <input
+              type={show ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full px-4 py-2 pr-10 rounded-md border focus:outline-none focus:ring-2 focus:ring-teal-400 bg-gray-100 dark:bg-gray-800"
+            />
+            <button
+              type="button"
+              onClick={() => setShow(!show)}
+              className="absolute right-2 top-2.5 text-teal-400 hover:text-teal-300"
+            >
+              {show ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-md transition"
+          >
+            Login
+          </button>
+
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setIsRegister(true)}
+              className="text-sm text-teal-500 hover:underline"
+            >
+              Create New Admin
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={handleRegister} className={`z-10 w-full max-w-sm backdrop-blur-lg p-8 mt-4 rounded-xl space-y-4 border
+          ${theme === 'dark' ? 'bg-black/40 border-gray-700' : 'bg-white/40 border-gray-300'}`}>
+          <h3 className={`text-2xl font-bold text-center
+            ${theme === 'dark' ? 'text-teal-200' : 'text-teal-700'}`}>
+            Register New Admin
+          </h3>
+          <input
+            type="text"
+            value={regName}
+            onChange={(e) => setRegName(e.target.value)}
+            placeholder="Name"
+            className="w-full px-4 py-2 rounded-md border bg-gray-100 dark:bg-gray-800"
+          />
+          <input
+            type="email"
+            value={regEmail}
+            onChange={(e) => setRegEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full px-4 py-2 rounded-md border bg-gray-100 dark:bg-gray-800"
+          />
+          <input
+            type="text"
+            value={regCountryCode}
+            onChange={(e) => setRegCountryCode(e.target.value)}
+            placeholder="Country Code (e.g. +91)"
+            className="w-full px-4 py-2 rounded-md border bg-gray-100 dark:bg-gray-800"
+          />
+          <input
+            type="text"
+            value={regMobile}
+            onChange={(e) => setRegMobile(e.target.value)}
+            placeholder="Mobile"
+            className="w-full px-4 py-2 rounded-md border bg-gray-100 dark:bg-gray-800"
+          />
+          <input
+            type="password"
+            value={regPassword}
+            onChange={(e) => setRegPassword(e.target.value)}
             placeholder="Password"
-            className={`w-full px-4 py-2 pr-10 rounded-md border focus:outline-none focus:ring-2 focus:ring-teal-400
-              ${theme === 'dark'
-                ? 'bg-gray-800 text-white border-gray-600 placeholder-gray-400'
-                : 'bg-gray-100 text-gray-800 border-gray-400 placeholder-gray-600'}`}
+            className="w-full px-4 py-2 rounded-md border bg-gray-100 dark:bg-gray-800"
           />
           <button
-            type="button"
-            onClick={() => setShow(!show)}
-            className="absolute right-2 top-2.5 text-teal-400 hover:text-teal-300"
+            type="submit"
+            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-md transition"
           >
-            {show ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+            Register Admin
           </button>
-        </div>
-
-        {/* Submit button */}
-        <button
-          type="submit"
-          className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-md transition"
-        >
-          Login
-        </button>
-      </form>
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setIsRegister(false)}
+              className="text-sm text-teal-500 hover:underline"
+            >
+              Back to Login
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Error alert modal */}
       {alert.show && (

@@ -1,84 +1,99 @@
-Project Title: CSTech Admin Panel – Agent Management and CSV Distribution (MERN Stack)
+✅ Project Title: CSTech Admin Panel – Agent Management and CSV Distribution (MERN Stack)
 
-Objective
-To build a fully functional MERN stack application that allows an admin user to:
-Log in securely,Create and manage agents,Upload a CSV/XLSX file,Automatically distribute the list among agents,View distribution in a user-friendly dashboard
+🎯 Objective  
+To build a secure and scalable MERN stack admin panel that allows:  
+Admin login with CSRF protection  
+Agent creation, management, soft deletion & restoration  
+Upload and structured distribution of contact lists from CSV/XLSX files  
+Full login analytics and geoIP tracking  
+Dark/light mode and branded dashboard UI  
 
-Implemented Features
-1. Admin Login
-Secure login using email & password
-JWT-based authentication
-Protected dashboard route
-Error handling with descriptive messages
-Logout functionality
+⚙️ Implemented Features  
 
-👤 2. Agent Management
-Add agents with the following mandatory fields:
-Name,Email,Mobile number (with country code),Password,Form validation for missing fields,Auto-refresh after agent creation,Agent list rendered on dashboard
+🔐 1. Admin Authentication  
+- Secure login using Email & Password  
+- CSRF token protection with SameSite cookie handling  
+- JWT stored in HttpOnly cookies  
+- Rate limiting to prevent brute-force  
+- Location-based login alerts sent on new IP  
+- Protected routes via middleware (`auth`, `isAdmin`)  
+- Logout and current user fetch (`/me`)  
+- Login history analytics (`/login-analytics`)  
 
-3. CSV/XLSX Upload & Distribution
-Upload .csv, .xlsx, or .xls files only
-Client-side file format validation
-Server-side structure validation
-Distributed list logic: Equally divided among 5 agents,Remainders handled sequentially,Saved and displayed per agent,Real-time UI update after upload
+👥 2. Agent Management  
+- Create agent with: Name, Email, Mobile Number, Country Code, Password  
+- Strict validations (e.g., password strength, mobile format based on country)  
+- Soft delete an agent  
+- Restore a deleted agent  
+- Search, pagination, and inclusion of deleted agents  
+- Clear feedback messages on success/error  
 
-4. Dark/Light Mode Toggle
-Global theme context using useTheme()
-Theme toggle button on both Login and Dashboard
-TailwindCSS darkMode: 'class' setup
-Smooth transitions using transition-colors
+📁 3. CSV/XLSX Upload & Distribution  
+- Upload files: `.csv`, `.xlsx`, `.xls` (max 5MB)  
+- Client-side & server-side file format validation  
+- Data must include: FirstName, Phone, Notes  
+- Tasks distributed evenly among 5 agents  
+- Remainders handled sequentially  
+- Data saved in MongoDB under timestamped batches  
+- History of uploaded batches retrievable with pagination, search, filters  
+- Each agent’s share displayed clearly  
 
-5. Branding
-Favicon replaced with CSTech logo
-Page title changed to CSTech
-React logo completely removed
+🌙 4. Dark/Light Mode Toggle  
+- Global `ThemeContext` via React  
+- Toggle on Login & Dashboard pages  
+- Tailwind `darkMode: 'class'` setup  
+- Smooth transition animation  
 
-Tech Stack
-Layer              Technology
-Frontend	      React.js + TailwindCSS
-Backend	          Node.js + Express.js
-Database	      MongoDB
-Auth	          JWT (JSON Web Token)
-File Upload	      multer
+🖼️ 5. Branding & UI Polish  
+- Custom CSTech favicon and page title  
+- Removed default React branding  
+- Responsive layout and smooth UI interactions  
+- Alerts and modals (e.g., file validation, confirm deletion)  
 
-Technical Implementation Highlights
-JWT stored on login, sent in headers for protected routes
-Separate context for managing theme
-multer used for file uploads
-Upload logic parses rows and distributes evenly among agents
-Clean folder structure with reusable components (AlertModal, etc.)
-.env setup for MongoDB URI, JWT secret, etc.
+🛠️ Tech Stack  
 
-Deliverables
-Full source code (Frontend + Backend)
-.env.example file with necessary keys
-Setup instructions in README.md
-Working video demo uploaded to Google Drive
+| Layer     | Technology                  |
+|----------|------------------------------|
+| Frontend | React.js + TailwindCSS       |
+| Backend  | Node.js + Express.js         |
+| Database | MongoDB (Mongoose)           |
+| Auth     | JWT + HttpOnly Cookies       |
+| Upload   | Multer + Express Validator   |
+| Security | Helmet, mongoSanitize, Rate Limit, CSRF |
+| Analytics| IP-based login history, location detection |
 
-Tested Scenarios
-Login with wrong credentials – error shown
-Upload invalid file – validation triggered
-Fewer than 5 agents – leftover handling
-Empty agent form – alerts shown
-Token tampering – access denied
-Theme toggle across pages
+🧪 Tested Scenarios  
+✅ Invalid login: shows proper message  
+✅ Invalid email/password: handled  
+✅ New IP: triggers geoIP email alert  
+✅ Token tampering: access denied  
+✅ Upload invalid file: error shown  
+✅ File > 5MB: upload rejected  
+✅ Less than 5 agents: distribution still succeeds  
+✅ Agent with duplicate email: error shown  
+✅ Restore deleted agent: success confirmed  
+✅ Dark/light mode persists across pages  
 
-How to Run Locally
+📝 How to Run Locally  
 
-# Backend
-cd backend
-npm install
-npm run dev
+🔄 Backend  
+cd backend  
+npm install  
+npm run dev 
+💻 Frontend
 
-# Frontend
-cd frontend
-npm install
-npm start
 
-Create a .env file in the backend folder:
-PORT=5000
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
+cd frontend  
+npm install  
+npm start  
+📁 .env File (backend)
 
+env
+Copy
+Edit
+PORT=5000  
+MONGO_URI=your_mongo_uri  
+JWT_SECRET=your_secret  
+NODE_ENV=development  
 
 

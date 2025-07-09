@@ -5,7 +5,7 @@ const { body } = require('express-validator');
 const User = require('../models/User');
 const { runValidation } = require('../middlewares/validate');
 const loginLimiter = require('../middlewares/rateLimiter');
-const { auth } = require('../middlewares/authMiddleware');
+const { auth  } = require('../middlewares/authMiddleware');
 const csrfValidator = require('../middlewares/csrfValidator');
 const axios = require('axios');
 const crypto = require('crypto');
@@ -13,12 +13,26 @@ const crypto = require('crypto');
 const router = express.Router();
 const sendSecurityAlert = require('../utils/sendSecurityAlert'); // Utility for email alert
 
-// Utility: Allow only admin users
-const ensureAdminUser = (user) => {
-  if (!user || user.role !== 'admin') {
-    throw new Error('Access denied: only admins can log in');
+
+router.post('/register-admin', async (req, res) => {
+  try {
+    const { name, email, countryCode, mobile, password } = req.body;
+    const hashed = await bcrypt.hash(password, 10);
+    const admin = await User.create({
+      name,
+      email,
+      countryCode,
+      mobile,
+      password: hashed,
+      role: 'admin',
+      createdBy: null
+    });
+    res.json({ message: 'Admin created', id: admin._id });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: err.message });
   }
-};
+});
 
 // Route: Generate CSRF token and set in cookie
 router.get('/csrf-token', (req, res) => {
@@ -40,8 +54,6 @@ router.post('/login', loginLimiter, csrfValidator, [
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid email' });
-
-    ensureAdminUser(user);
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid password' });

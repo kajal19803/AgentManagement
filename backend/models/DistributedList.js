@@ -1,19 +1,25 @@
 const mongoose = require('mongoose');
 
-// Schema to store distributed data for each agent
 const DistributedListSchema = new mongoose.Schema({
-  // Reference to the agent (user) who gets this chunk
-  agent: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  agent: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
-  // The actual data list assigned to this agent
-  list: { type: Array, required: true },
+  // Each task now includes its own status
+  list: [{
+    firstName: String,     
+    phone: String,
+    notes: String,
+    // Other fields as needed
+    status: {
+      type: String,
+      enum: ['assigned', 'in-progress', 'completed'],
+      default: 'assigned'
+    }
+  }],
 
-  // Timestamp of when the file was uploaded and distributed
   uploadedAt: { type: Date, default: Date.now }
+}, {
+  timestamps: true
 });
 
-// Export the model for use in other files
 module.exports = mongoose.model('DistributedList', DistributedListSchema);
-
-
-
