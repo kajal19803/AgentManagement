@@ -11,6 +11,7 @@ function Login({ onLogin }) {
   const [show, setShow] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '' });
   const [csrfToken, setCsrfToken] = useState('');
+  const [cookiesEnabled, setCookiesEnabled] = useState(true);
 
   // Register admin states
   const [isRegister, setIsRegister] = useState(false);
@@ -19,6 +20,16 @@ function Login({ onLogin }) {
   const [regCountryCode, setRegCountryCode] = useState('+91');
   const [regMobile, setRegMobile] = useState('');
   const [regPassword, setRegPassword] = useState('');
+
+  // Check if cookies are enabled
+  useEffect(() => {
+    document.cookie = "cookietest=1";
+    if (document.cookie.indexOf("cookietest=") === -1) {
+      setCookiesEnabled(false);
+    } else {
+      setCookiesEnabled(true);
+    }
+  }, []);
 
   // Fetch CSRF token on component mount
   useEffect(() => {
@@ -40,12 +51,12 @@ function Login({ onLogin }) {
       localStorage.setItem("userRole", res.data.user.role);
 
       if (res.data.user.role === 'admin') {
-      window.location.href = '/dashboard';
+        window.location.href = '/dashboard';
       } else if (res.data.user.role === 'agent') {
-      window.location.href = '/agent-dashboard';
+        window.location.href = '/agent-dashboard';
       } else {
-      setAlert({ show: true, message: 'Unauthorized role' });
-     }
+        setAlert({ show: true, message: 'Unauthorized role' });
+      }
 
     } catch (err) {
       setAlert({ show: true, message: err.response?.data?.message || 'Login failed' });
@@ -85,6 +96,12 @@ function Login({ onLogin }) {
       {/* Background blur effects */}
       <div className="absolute w-[500px] h-[500px] bg-teal-500 rounded-full blur-3xl opacity-20 top-0 left-0 animate-pulse"></div>
       <div className="absolute w-[400px] h-[400px] bg-purple-600 rounded-full blur-3xl opacity-20 bottom-0 right-0 animate-ping"></div>
+
+      {!cookiesEnabled && (
+        <div className="fixed top-0 w-full bg-yellow-300 text-black text-center py-2 z-50">
+          Cookies are disabled. Please enable cookies in your browser settings to use this site.
+        </div>
+      )}
 
       {/* Login or Register form */}
       {!isRegister ? (
