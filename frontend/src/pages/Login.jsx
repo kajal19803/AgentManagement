@@ -41,6 +41,12 @@ function Login({ onLogin }) {
   // Handle login form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!cookiesEnabled) {
+      setAlert({ show: true, message: 'Cookies are required to login. Please enable cookies.' });
+      return;
+    }
+
     try {
       const res = await axios.post(
         '/api/auth/login',
